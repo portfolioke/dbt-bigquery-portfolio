@@ -1,0 +1,6 @@
+profiles.yml
+*.json
+.env
+target/
+dbt_packages/
+logs/
