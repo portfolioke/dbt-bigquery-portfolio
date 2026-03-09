@@ -19,7 +19,7 @@ renamed as (
         -- Device fields
         device.category as device_category,
         device.operating_system as device_os,
-        device.browser as device_browser,
+        device.web_info.browser as device_browser,
         device.language as device_language,
 
         -- Geo fields
