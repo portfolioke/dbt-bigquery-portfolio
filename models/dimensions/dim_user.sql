@@ -29,7 +29,7 @@ select
     device_os,
     traffic_source,
     traffic_medium,
-    traffic_campaign
+    traffic_campaign,
     case when user_id is not null then true else false end as is_authenticated,
     case when device_category = 'mobile' then true else false end as is_mobile_user
 from users
