@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: stg_ga4_events
+    description: "Staged and flattened GA4 event data from the Google Merchandise Store. Unnests all nested RECORD fields into clean, queryable columns."
+    columns:
+      - name: event_date
+        description: "Date of the event in YYYYMMDD string format"
+        tests:
+          - not_null
+
+      - name: event_timestamp
+        description: "Timestamp of the event in microseconds, converted to timestamp"
+        tests:
+          - not_null
+
+      - name: event_name
+        description: "Name of the GA4 event (e.g. page_view, purchase, session_start)"
+        tests:
+          - not_null
+
+      - name: user_pseudo_id
+        description: "Anonymous user identifier assigned by GA4"
+
+      - name: user_id
+        description: "Authenticated user ID, null for anonymous users"
+
+      - name: user_first_touch_timestamp
+        description: "Timestamp when the user first visited the site"
+
+      - name: device_category
+        description: "Device category: mobile, desktop or tablet"
+        tests:
+          - accepted_values:
+              values: ['mobile', 'desktop', 'tablet']
+
+      - name: device_os
+        description: "Operating system of the device"
+
+      - name: device_browser
+        description: "Browser used by the user"
+
+      - name: device_language
+        description: "Language setting of the device"
+
+      - name: geo_country
+        description: "Country of the user based on IP address"
+
+      - name: geo_region
+        description: "Region/state of the user"
+
+      - name: geo_city
+        description: "City of the user"
+
+      - name: traffic_source
+        description: "Traffic source (e.g. google, facebook, direct)"
+
+      - name: traffic_medium
+        description: "Traffic medium (e.g. organic, cpc, referral)"
+
+      - name: traffic_campaign
+        description: "Campaign name if applicable"
+
+      - name: platform
+        description: "Platform of the event (e.g. WEB, IOS, ANDROID)"
+
+      - name: stream_id
+        description: "GA4 data stream identifier"
