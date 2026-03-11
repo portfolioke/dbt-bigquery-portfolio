@@ -1,0 +1,169 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Date dimension table containing one row per day for 2021 with calendar attributes."
+    columns:
+      - name: date_id
+        description: "Primary key - the calendar date"
+        tests:
+          - unique
+          - not_null
+
+      - name: year
+        description: "Calendar year"
+        tests:
+          - not_null
+
+      - name: month
+        description: "Month number (1-12)"
+        tests:
+          - not_null
+
+      - name: day
+        description: "Day of month"
+        tests:
+          - not_null
+
+      - name: week_of_year
+        description: "Week number of the year"
+
+      - name: quarter
+        description: "Quarter number (1-4)"
+
+      - name: month_name
+        description: "Full month name (e.g. January)"
+
+      - name: day_name
+        description: "Full day name (e.g. Monday)"
+
+      - name: is_weekend
+        description: "True if the date is a Saturday or Sunday"
+
+  - name: dim_user
+    description: "User dimension containing one row per unique user with their first touch attributes."
+    columns:
+      - name: user_key
+        description: "Surrogate primary key generated from user_pseudo_id"
+        tests:
+          - unique
+          - not_null
+
+      - name: user_pseudo_id
+        description: "Anonymous user identifier assigned by GA4"
+        tests:
+          - unique
+          - not_null
+
+      - name: user_id
+        description: "Authenticated user ID, null for anonymous users"
+
+      - name: user_first_touch_timestamp
+        description: "Timestamp of the user's first visit"
+
+      - name: geo_country
+        description: "Country of the user at first touch"
+
+      - name: geo_city
+        description: "City of the user at first touch"
+
+      - name: device_category
+        description: "Device category at first touch"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['mobile', 'desktop', 'tablet']
+
+      - name: device_os
+        description: "Operating system at first touch"
+
+      - name: traffic_source
+        description: "Traffic source at first touch"
+
+      - name: traffic_medium
+        description: "Traffic medium at first touch"
+
+      - name: traffic_campaign
+        description: "Campaign name at first touch"
+
+      - name: is_authenticated
+        description: "True if the user has a real user_id (logged in)"
+
+      - name: is_mobile_user
+        description: "True if the user's first touch was on a mobile device"
+
+  - name: dim_device
+    description: "Device dimension containing one row per unique device combination."
+    columns:
+      - name: device_key
+        description: "Surrogate primary key generated from device attributes"
+        tests:
+          - unique
+          - not_null
+
+      - name: device_category
+        description: "Device category: mobile, desktop or tablet"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['mobile', 'desktop', 'tablet']
+
+      - name: device_os
+        description: "Operating system of the device"
+
+      - name: device_browser
+        description: "Browser used"
+
+      - name: device_language
+        description: "Language setting of the device"
+
+      - name: is_mobile
+        description: "True if device is mobile"
+
+      - name: is_tablet
+        description: "True if device is tablet"
+
+      - name: is_desktop
+        description: "True if device is desktop"
+
+  - name: dim_geo
+    description: "Geography dimension containing one row per unique country/region/city combination."
+    columns:
+      - name: geo_key
+        description: "Surrogate primary key generated from geo attributes"
+        tests:
+          - unique
+          - not_null
+
+      - name: geo_country
+        description: "Country name"
+
+      - name: geo_region
+        description: "Region or state name"
+
+      - name: geo_city
+        description: "City name"
+
+  - name: dim_traffic_source
+    description: "Traffic source dimension containing one row per unique source/medium/campaign combination."
+    columns:
+      - name: traffic_key
+        description: "Surrogate primary key generated from traffic attributes"
+        tests:
+          - unique
+          - not_null
+
+      - name: traffic_source
+        description: "Traffic source (e.g. google, facebook, direct)"
+
+      - name: traffic_medium
+        description: "Traffic medium (e.g. organic, cpc, referral)"
+
+      - name: traffic_campaign
+        description: "Campaign name if applicable"
+
+      - name: is_organic
+        description: "True if traffic medium is organic"
+
+      - name: is_paid
+        description: "True if traffic medium is cpc (paid)"
