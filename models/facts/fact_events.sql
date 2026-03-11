@@ -8,7 +8,7 @@ with events as (
         {{ dbt_utils.generate_surrogate_key(['traffic_source', 'traffic_medium', 'traffic_campaign']) }} as traffic_key,
 
         -- Date for joining to dim_date
-        cast(event_date as date) as event_date,
+        parse_date('%Y%m%d', event_date) as event_date,,
 
         -- Event attributes
         event_name,
