@@ -9,7 +9,7 @@ with devices as (
 )
 
 select
-    {{ dbt_utils.generate_surrogate_key(['device_category', 'device_os', 'device_browser']) }} as device_key,
+    {{ dbt_utils.generate_surrogate_key(['device_category', 'device_os', 'device_browser', 'device_language']) }} as device_key,
     device_category,
     device_os,
     device_browser,
