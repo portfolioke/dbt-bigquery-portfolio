@@ -32,7 +32,8 @@ models:
         description: "Device category: mobile, desktop or tablet"
         tests:
           - accepted_values:
-              values: ['mobile', 'desktop', 'tablet']
+              arguments:
+                values: ['mobile', 'desktop', 'tablet']
 
       - name: device_os
         description: "Operating system of the device"
