@@ -1,0 +1,99 @@
+version: 2
+
+models:
+  - name: fact_events
+    description: "Fact table containing one row per GA4 event with foreign keys to all dimensions. Central table of the star schema covering all user interactions on the Google Merchandise Store."
+    columns:
+      - name: event_key
+        description: "Surrogate primary key generated from user_pseudo_id, event_name and event_timestamp"
+        tests:
+          - unique
+          - not_null
+
+      - name: user_key
+        description: "Foreign key to dim_user"
+        tests:
+          - not_null
+
+      - name: device_key
+        description: "Foreign key to dim_device"
+        tests:
+          - not_null
+
+      - name: geo_key
+        description: "Foreign key to dim_geo"
+        tests:
+          - not_null
+
+      - name: traffic_key
+        description: "Foreign key to dim_traffic_source"
+        tests:
+          - not_null
+
+      - name: event_date
+        description: "Date of the event"
+        tests:
+          - not_null
+
+      - name: event_name
+        description: "Name of the GA4 event (e.g. page_view, purchase, session_start)"
+        tests:
+          - not_null
+
+      - name: event_timestamp
+        description: "Exact timestamp of the event"
+        tests:
+          - not_null
+
+      - name: event_value_in_usd
+        description: "Monetary value of the event in USD if applicable"
+
+      - name: platform
+        description: "Platform of the event (WEB, IOS, ANDROID)"
+
+      - name: stream_id
+        description: "GA4 data stream identifier"
+
+  - name: fact_purchases
+    description: "Fact table containing one row per purchase transaction. Filtered subset of fact_events where event_name = purchase with revenue metrics."
+    columns:
+      - name: purchase_key
+        description: "Surrogate primary key generated from user_pseudo_id and event_timestamp"
+        tests:
+          - unique
+          - not_null
+
+      - name: user_key
+        description: "Foreign key to dim_user"
+        tests:
+          - not_null
+
+      - name: geo_key
+        description: "Foreign key to dim_geo"
+        tests:
+          - not_null
+
+      - name: traffic_key
+        description: "Foreign key to dim_traffic_source"
+        tests:
+          - not_null
+
+      - name: device_key
+        description: "Foreign key to dim_device"
+        tests:
+          - not_null
+
+      - name: event_date
+        description: "Date of the purchase"
+        tests:
+          - not_null
+
+      - name: revenue_usd
+        description: "Purchase revenue in USD"
+        tests:
+          - not_null
+
+      - name: event_timestamp
+        description: "Exact timestamp of the purchase"
+        tests:
+          - not_null
