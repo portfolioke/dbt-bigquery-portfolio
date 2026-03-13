@@ -1,3 +1,11 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='event_key',
+        incremental_strategy='merge'
+    )
+}}
+
 with events as (
     select
         -- Keys for joining to dimensions
@@ -19,6 +27,10 @@ with events as (
 
     from {{ ref('stg_ga4_events') }}
     where event_name is not null
+
+        {% if is_incremental() %}
+        and event_timestamp > (select max(event_timestamp) from {{ this }})
+    {% endif %}
 )
 
 select * from events

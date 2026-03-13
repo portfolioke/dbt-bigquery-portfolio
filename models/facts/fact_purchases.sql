@@ -1,3 +1,11 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='purchase_key',
+        incremental_strategy='merge'
+    )
+}}
+
 with purchases as (
     select
         -- Keys
@@ -17,6 +25,10 @@ with purchases as (
     from {{ ref('stg_ga4_events') }}
     where event_name = 'purchase'
         and event_value_in_usd is not null
+
+    {% if is_incremental() %}
+        and event_timestamp > (select max(event_timestamp) from {{ this }})
+    {% endif %}
 )
 
 select * from purchases
