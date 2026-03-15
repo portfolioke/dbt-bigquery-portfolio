@@ -11,7 +11,7 @@ with events as (
         -- Keys for joining to dimensions
         {{ dbt_utils.generate_surrogate_key(['user_pseudo_id', 'event_name', 'event_timestamp']) }} as event_key,
         {{ dbt_utils.generate_surrogate_key(['user_pseudo_id']) }} as user_key,
-        {{ dbt_utils.generate_surrogate_key(['device_category', 'device_os', 'device_browser']) }} as device_key,
+        {{ dbt_utils.generate_surrogate_key(['device_category', 'device_os', 'device_browser','device_language']) }} as device_key,
         {{ dbt_utils.generate_surrogate_key(['geo_country', 'geo_region', 'geo_city']) }} as geo_key,
         {{ dbt_utils.generate_surrogate_key(['traffic_source', 'traffic_medium', 'traffic_campaign']) }} as traffic_key,
 

@@ -14,21 +14,37 @@ models:
         description: "Foreign key to dim_user"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_user')
+                field: user_key
 
       - name: device_key
         description: "Foreign key to dim_device"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_device')
+                field: device_key
 
       - name: geo_key
         description: "Foreign key to dim_geo"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_geo')
+                field: geo_key
 
       - name: traffic_key
         description: "Foreign key to dim_traffic_source"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_traffic_source')
+                field: traffic_key
 
       - name: event_date
         description: "Date of the event"
@@ -67,21 +83,37 @@ models:
         description: "Foreign key to dim_user"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_user')
+                field: user_key
 
       - name: geo_key
         description: "Foreign key to dim_geo"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_geo')
+                field: geo_key
 
       - name: traffic_key
         description: "Foreign key to dim_traffic_source"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_traffic_source')
+                field: traffic_key
 
       - name: device_key
         description: "Foreign key to dim_device"
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_device')
+                field: device_key
 
       - name: event_date
         description: "Date of the purchase"
