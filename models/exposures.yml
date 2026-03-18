@@ -1,0 +1,22 @@
+version: 2
+
+exposures:
+  - name: ga4_ecommerce_dashboard
+    type: dashboard
+    maturity: medium
+    url: https://lookerstudio.google.com/reporting/743a1687-f0f4-4ab8-b5f5-efc422f39330
+    description: >
+      Executive dashboard showing revenue, traffic source performance,
+      geographic breakdown and daily trends for the Google Merchandise Store.
+      Built on top of the dbt star schema in BigQuery.
+
+    depends_on:
+      - ref('fact_purchases')
+      - ref('dim_geo')
+      - ref('dim_traffic_source')
+      - ref('dim_date')
+      - ref('dim_device')
+
+    owner:
+      name: Kyamil Ergyun
+      email: k.ergyun@gmail.com
