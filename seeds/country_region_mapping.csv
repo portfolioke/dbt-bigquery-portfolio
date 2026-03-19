@@ -1,0 +1,49 @@
+country_name,region,sub_region
+United States,Americas,North America
+Canada,Americas,North America
+Mexico,Americas,Latin America
+Brazil,Americas,Latin America
+Argentina,Americas,Latin America
+Colombia,Americas,Latin America
+Chile,Americas,Latin America
+United Kingdom,EMEA,Western Europe
+Germany,EMEA,Western Europe
+France,EMEA,Western Europe
+Netherlands,EMEA,Western Europe
+Spain,EMEA,Western Europe
+Italy,EMEA,Western Europe
+Sweden,EMEA,Western Europe
+Norway,EMEA,Western Europe
+Denmark,EMEA,Western Europe
+Switzerland,EMEA,Western Europe
+Belgium,EMEA,Western Europe
+Austria,EMEA,Western Europe
+Poland,EMEA,Central & Eastern Europe
+Czech Republic,EMEA,Central & Eastern Europe
+Romania,EMEA,Central & Eastern Europe
+Hungary,EMEA,Central & Eastern Europe
+Ukraine,EMEA,Central & Eastern Europe
+Russia,EMEA,Central & Eastern Europe
+Turkey,EMEA,Middle East & Africa
+Israel,EMEA,Middle East & Africa
+Saudi Arabia,EMEA,Middle East & Africa
+United Arab Emirates,EMEA,Middle East & Africa
+South Africa,EMEA,Middle East & Africa
+Nigeria,EMEA,Middle East & Africa
+Kenya,EMEA,Middle East & Africa
+India,APAC,South Asia
+Pakistan,APAC,South Asia
+Bangladesh,APAC,South Asia
+China,APAC,East Asia
+Japan,APAC,East Asia
+South Korea,APAC,East Asia
+Taiwan,APAC,East Asia
+Hong Kong,APAC,East Asia
+Singapore,APAC,Southeast Asia
+Thailand,APAC,Southeast Asia
+Indonesia,APAC,Southeast Asia
+Malaysia,APAC,Southeast Asia
+Vietnam,APAC,Southeast Asia
+Philippines,APAC,Southeast Asia
+Australia,APAC,Oceania
+New Zealand,APAC,Oceania

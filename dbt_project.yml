@@ -40,3 +40,11 @@ models:
     facts:
       +materialized: table
       +schema: facts
+seeds:
+  ga4_analytics:
+    country_region_mapping:
+      +schema: seeds
+      +column_types:
+        country_name: string
+        region: string
+        sub_region: string
