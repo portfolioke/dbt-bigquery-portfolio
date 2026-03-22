@@ -4,10 +4,11 @@ sources:
   - name: ga4
     database: dwh-kyamil
     schema: ga4_raw
-    loaded_at_field: event_timestamp
-    freshness:
-      warn_after: {count: 24, period: hour}
-      error_after: {count: 48, period: hour}
+    config:
+      loaded_at_field: "timestamp(parse_date('%Y%m%d', event_date))"
+      freshness:
+        warn_after: {count: 24, period: hour}
+        error_after: {count: 48, period: hour}
     tables:
       - name: events
         description: "Raw GA4 event data from Google Merchandise Store"
