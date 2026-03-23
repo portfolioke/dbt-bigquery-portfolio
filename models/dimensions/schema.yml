@@ -8,24 +8,29 @@ models:
         description: "Primary key - the calendar date"
         tests:
           - unique:
-              severity: error
+              config:
+                severity: error
           - not_null:
-              severity: error
+              config:
+                severity: error
       - name: year
         description: "Calendar year"
         tests:
           - not_null:
-              severity: error
+              config:
+                severity: error
       - name: month
         description: "Month number (1-12)"
         tests:
           - not_null:
-              severity: error
+              config:  
+                severity: error
       - name: day
         description: "Day of month"
         tests:
           - not_null:
-              severity: error
+              config:
+                severity: error
       - name: week_of_year
         description: "Week number of the year"
       - name: quarter
@@ -44,15 +49,19 @@ models:
         description: "Surrogate primary key generated from user_pseudo_id"
         tests:
           - unique:
-              severity: error
+              config:
+                severity: error
           - not_null:
-              severity: error
+              config:
+                severity: error
       - name: user_pseudo_id
         description: "Anonymous user identifier assigned by GA4"
         tests:
           - unique:
+            config:
               severity: error
           - not_null:
+              config:  
               severity: error
       - name: user_id
         description: "Authenticated user ID, null for anonymous users"
@@ -68,7 +77,8 @@ models:
           - accepted_values:
               arguments:
                 values: ['mobile', 'desktop', 'tablet']
-              severity: warn
+              config:
+                severity: warn
       - name: device_os
         description: "Operating system at first touch"
       - name: traffic_source
@@ -89,16 +99,19 @@ models:
         description: "Surrogate primary key generated from device attributes"
         tests:
           - unique:
-              severity: error
+              config:
+                severity: error
           - not_null:
-              severity: error
+              config:
+                severity: error
       - name: device_category
         description: "Device category: mobile, desktop or tablet"
         tests:
           - accepted_values:
               arguments:
                 values: ['mobile', 'desktop', 'tablet']
-              severity: warn
+              config:
+                severity: warn
       - name: device_os
         description: "Operating system of the device"
       - name: device_browser
@@ -119,9 +132,11 @@ models:
         description: "Surrogate primary key generated from geo attributes"
         tests:
           - unique:
-              severity: error
+              config:
+                severity: error
           - not_null:
-              severity: error
+              config:
+                severity: error
       - name: geo_country
         description: "Country name"
       - name: geo_region
@@ -136,9 +151,11 @@ models:
         description: "Surrogate primary key generated from traffic attributes"
         tests:
           - unique:
-              severity: error
+              config:
+                severity: error
           - not_null:
-              severity: error
+              config:
+                severity: error
       - name: traffic_source
         description: "Traffic source (e.g. google, facebook, direct)"
       - name: traffic_medium
