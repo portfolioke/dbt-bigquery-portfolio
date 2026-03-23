@@ -23,7 +23,7 @@ models:
         description: "Month number (1-12)"
         tests:
           - not_null:
-              config:  
+              config:
                 severity: error
       - name: day
         description: "Day of month"
@@ -58,11 +58,11 @@ models:
         description: "Anonymous user identifier assigned by GA4"
         tests:
           - unique:
-            config:
-              severity: error
+              config:
+                severity: error
           - not_null:
-              config:  
-              severity: error
+              config:
+                severity: error
       - name: user_id
         description: "Authenticated user ID, null for anonymous users"
       - name: user_first_touch_timestamp
