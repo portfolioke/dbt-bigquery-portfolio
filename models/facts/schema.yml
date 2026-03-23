@@ -7,66 +7,74 @@ models:
       - name: event_key
         description: "Surrogate primary key generated from user_pseudo_id, event_name and event_timestamp"
         tests:
-          - unique
-          - not_null
-
+          - unique:
+              severity: error
+          - not_null:
+              severity: error
       - name: user_key
         description: "Foreign key to dim_user"
         tests:
-          - not_null
+          - not_null:
+              severity: error
           - relationships:
               arguments:
                 to: ref('dim_user')
                 field: user_key
-
+              severity: error
       - name: device_key
         description: "Foreign key to dim_device"
         tests:
-          - not_null
+          - not_null:
+              severity: error
           - relationships:
               arguments:
                 to: ref('dim_device')
                 field: device_key
-
+              severity: error
       - name: geo_key
         description: "Foreign key to dim_geo"
         tests:
-          - not_null
+          - not_null:
+              severity: error
           - relationships:
               arguments:
                 to: ref('dim_geo')
                 field: geo_key
-
+              severity: error
       - name: traffic_key
         description: "Foreign key to dim_traffic_source"
         tests:
-          - not_null
+          - not_null:
+              severity: error
           - relationships:
               arguments:
                 to: ref('dim_traffic_source')
                 field: traffic_key
-
+              severity: error
       - name: event_date
         description: "Date of the event"
         tests:
-          - not_null
-
+          - not_null:
+              severity: error
       - name: event_name
         description: "Name of the GA4 event (e.g. page_view, purchase, session_start)"
         tests:
-          - not_null
-
+          - not_null:
+              severity: error
       - name: event_timestamp
         description: "Exact timestamp of the event"
         tests:
-          - not_null
-
+          - not_null:
+              severity: error
       - name: event_value_in_usd
         description: "Monetary value of the event in USD if applicable"
-
       - name: platform
         description: "Platform of the event (WEB, IOS, ANDROID)"
-
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['WEB', 'IOS', 'ANDROID']
+              severity: warn
       - name: stream_id
         description: "GA4 data stream identifier"
 
@@ -76,56 +84,62 @@ models:
       - name: purchase_key
         description: "Surrogate primary key generated from user_pseudo_id and event_timestamp"
         tests:
-          - unique
-          - not_null
-
+          - unique:
+              severity: error
+          - not_null:
+              severity: error
       - name: user_key
         description: "Foreign key to dim_user"
         tests:
-          - not_null
+          - not_null:
+              severity: error
           - relationships:
               arguments:
                 to: ref('dim_user')
                 field: user_key
-
+              severity: error
       - name: geo_key
         description: "Foreign key to dim_geo"
         tests:
-          - not_null
+          - not_null:
+              severity: error
           - relationships:
               arguments:
                 to: ref('dim_geo')
                 field: geo_key
-
+              severity: error
       - name: traffic_key
         description: "Foreign key to dim_traffic_source"
         tests:
-          - not_null
+          - not_null:
+              severity: error
           - relationships:
               arguments:
                 to: ref('dim_traffic_source')
                 field: traffic_key
-
+              severity: error
       - name: device_key
         description: "Foreign key to dim_device"
         tests:
-          - not_null
+          - not_null:
+              severity: error
           - relationships:
               arguments:
                 to: ref('dim_device')
                 field: device_key
-
+              severity: error
       - name: event_date
         description: "Date of the purchase"
         tests:
-          - not_null
-
+          - not_null:
+              severity: error
       - name: revenue_usd
         description: "Purchase revenue in USD"
         tests:
-          - not_null
-
+          - not_null:
+              severity: error
       - name: event_timestamp
         description: "Exact timestamp of the purchase"
         tests:
-          - not_null
+          - not_null:
+              severity: error
