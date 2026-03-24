@@ -46,4 +46,4 @@ join {{ ref('dim_traffic_source') }} t
     on p.traffic_key = t.traffic_key
 group by 1, 2, 3, 4
 order by total_revenue_usd desc
-;
+;# CI/CD test
