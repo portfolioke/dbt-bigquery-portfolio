@@ -1,0 +1,40 @@
+name: dbt CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  dbt-cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-bigquery==1.11.1
+
+      - name: Write BigQuery credentials
+        run: echo '${{ secrets.BIGQUERY_SERVICE_ACCOUNT }}' > /tmp/keyfile.json
+
+      - name: Copy CI profiles
+        run: cp profiles_ci.yml profiles.yml
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      - name: Run dbt build against prod
+        run: dbt build --target prod
+        env:
+          DBT_PROFILES_DIR: .
+
+      - name: Generate dbt docs
+        run: dbt docs generate --target prod
+        env:
+          DBT_PROFILES_DIR: .

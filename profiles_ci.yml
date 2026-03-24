@@ -1,0 +1,24 @@
+ga4_analytics:
+  target: ci
+  outputs:
+    ci:
+      type: bigquery
+      method: service-account
+      project: dwh-kyamil
+      dataset: dbt_ci
+      keyfile: /tmp/keyfile.json
+      location: US
+      threads: 1
+      job_execution_timeout_seconds: 300
+      job_retries: 1
+
+    prod:
+      type: bigquery
+      method: service-account
+      project: dwh-kyamil
+      dataset: dbt_prod
+      keyfile: /tmp/keyfile.json
+      location: US
+      threads: 1
+      job_execution_timeout_seconds: 300
+      job_retries: 1
