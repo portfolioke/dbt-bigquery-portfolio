@@ -37,4 +37,4 @@ jobs:
       - name: Generate dbt docs
         run: dbt docs generate --target prod
         env:
-          DBT_PROFILES_DIR: .
+          DBT_PROFILES_DIR: .# prod fix applied Tue Mar 24 07:59:15 PM UTC 2026
