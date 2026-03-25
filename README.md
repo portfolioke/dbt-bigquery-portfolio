@@ -232,9 +232,7 @@ dbt docs serve --host 0.0.0.0 --port 8085
 
 ## 📬 Contact
 
-Built by **Kyamil** as part of an analytics engineering portfolio targeting mid-to-senior roles at Berlin-based scaleups.
-
-The analyst background (3 years) is intentional — the goal is to demonstrate not just technical execution but the reasoning behind every architectural decision.
+Built by **Kyamil** as part of an analytics engineering portfolio.
 
 - GitHub: [portfolioke](https://github.com/portfolioke)
 - LinkedIn: [in/databiai](https://www.linkedin.com/in/databiai/)
