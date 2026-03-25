@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,10 +31,35 @@ jobs:
       - name: Install dbt packages
         run: dbt deps
 
-      - name: Run dbt build (run + test)
-        run: dbt build --target ci
+      - name: Download previous manifest
+        uses: actions/cache@v4
+        id: cache-manifest
+        with:
+          path: ./previous-state
+          key: dbt-manifest-${{ github.base_ref }}
+
+      - name: Run slim dbt build
+        run: |
+          if [ -d "./previous-state" ] && [ -f "./previous-state/manifest.json" ]; then
+            echo "Previous manifest found — running slim CI (state:modified+)"
+            dbt build --target ci --select state:modified+ --defer --state ./previous-state
+          else
+            echo "No previous manifest — running full build"
+            dbt build --target ci
+          fi
         env:
           DBT_PROFILES_DIR: .
+
+      - name: Save manifest for next run
+        run: |
+          mkdir -p ./previous-state
+          cp target/manifest.json ./previous-state/manifest.json
+
+      - name: Cache manifest
+        uses: actions/cache/save@v4
+        with:
+          path: ./previous-state
+          key: dbt-manifest-${{ github.base_ref }}
 
       - name: Upload test results
         if: always()
