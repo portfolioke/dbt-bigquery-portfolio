@@ -1,16 +1,8 @@
-
-# Name your project! Project names should contain only lowercase characters
-# and underscores. A good package name should reflect your organization's
-# name or the intended use of these models
 name: 'ga4_analytics'
 version: '1.0.0'
 
-# This setting configures which "profile" dbt uses for this project.
 profile: 'ga4_analytics'
 
-# These configurations specify where dbt should look for different types of files.
-# The `model-paths` config, for example, states that models in this project can be
-# found in the "models/" directory. You probably won't need to change these!
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
@@ -18,28 +10,43 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-clean-targets:         # directories to be removed by `dbt clean`
+clean-targets:
   - "target"
   - "dbt_packages"
 
-
-# Configuring models
-# Full documentation: https://docs.getdbt.com/docs/configuring-models
-
-# In this example config, we tell dbt to build all models in the example/
-# directory as views. These settings can be overridden in the individual model
-# files using the `{{ config(...) }}` macro.
 models:
   ga4_analytics:
+    +persist_docs:
+      relation: true
+      columns: true
     staging:
       +materialized: view
       +schema: staging
+      +tags: ['staging', 'daily']
+      +meta:
+        owner: Kyamil
+        team: analytics_engineering
+        layer: staging
+        contains_pii: true
     dimensions:
       +materialized: table
       +schema: dimensions
+      +tags: ['dimensions', 'daily', 'core']
+      +meta:
+        owner: Kyamil
+        team: analytics_engineering
+        layer: core
+        contains_pii: false
     facts:
       +materialized: table
       +schema: facts
+      +tags: ['facts', 'daily', 'core']
+      +meta:
+        owner: Kyamil
+        team: analytics_engineering
+        layer: core
+        contains_pii: false
+
 seeds:
   ga4_analytics:
     country_region_mapping:
