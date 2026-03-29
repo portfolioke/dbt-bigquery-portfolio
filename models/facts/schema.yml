@@ -73,6 +73,12 @@ models:
           - not_null:
               config:
                 severity: error
+          - dbt_expectations.expect_column_value_lengths_to_be_between:
+              arguments:
+                min_value: 1
+                max_value: 100
+              config:
+                severity: warn
       - name: event_timestamp
         description: "Exact timestamp of the event"
         tests:
@@ -162,6 +168,15 @@ models:
         description: "Purchase revenue in USD"
         tests:
           - not_null:
+              config:
+                severity: error
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 10000
+              config:
+                severity: warn
+          - assert_column_is_positive:
               config:
                 severity: error
       - name: event_timestamp

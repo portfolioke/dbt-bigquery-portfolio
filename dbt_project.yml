@@ -47,11 +47,6 @@ models:
         layer: core
         contains_pii: false
 
-tests:
-  ga4_analytics:
-    +store_failures: true
-    +schema: test_failures
-
 seeds:
   ga4_analytics:
     country_region_mapping:
