@@ -24,7 +24,9 @@ models:
           - not_null:
               config:
                 severity: error
-
+          - assert_column_not_empty_string:
+              config:
+                severity: error
       - name: user_pseudo_id
         description: "Anonymous user identifier assigned by GA4"
 
