@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: mart_revenue_by_channel
+    description: "Aggregated revenue and purchase metrics grouped by traffic source and medium. Used for channel performance analysis and marketing attribution."
+
+  - name: mart_daily_revenue
+    description: "Daily revenue and purchase metrics joined with calendar attributes. Used for time series analysis and trend reporting."
+
+  - name: mart_user_cohorts
+    description: "User cohort analysis grouping users by country, device, traffic source and authentication status with purchase behaviour metrics."
+
+  - name: mart_geo_revenue
+    description: "Revenue and purchase metrics aggregated by country and world region. Used for geographic performance analysis."
