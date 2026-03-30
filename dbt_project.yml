@@ -14,6 +14,12 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
+on-run-start:
+  - "{{ log('Starting dbt run: ' ~ run_started_at, info=True) }}"
+
+on-run-end:
+  - "{{ log('Finished dbt run. Models completed: ' ~ results | length, info=True) }}"
+
 models:
   ga4_analytics:
     +persist_docs:
@@ -46,6 +52,15 @@ models:
         team: analytics_engineering
         layer: core
         contains_pii: false
+    marts:
+          +materialized: table
+          +schema: marts
+          +tags: ['marts', 'daily']
+          +meta:
+            owner: jack
+            team: analytics_engineering
+            layer: marts
+            contains_pii: false
 
 seeds:
   ga4_analytics:
