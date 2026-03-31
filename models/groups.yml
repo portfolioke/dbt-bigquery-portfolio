@@ -1,0 +1,6 @@
+version: 2
+
+groups:
+  - name: analytics_engineering
+    owner:
+      email: k.ergyun@gmail.com

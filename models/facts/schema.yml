@@ -100,9 +100,13 @@ models:
 
   - name: fact_purchases
     description: "Fact table containing one row per purchase transaction. Filtered subset of fact_events where event_name = purchase with revenue metrics."
+    config:
+      contract:
+        enforced: true
     columns:
       - name: purchase_key
         description: "Surrogate primary key generated from user_pseudo_id and event_timestamp"
+        data_type: string
         tests:
           - unique:
               config:
@@ -112,6 +116,7 @@ models:
                 severity: error
       - name: user_key
         description: "Foreign key to dim_user"
+        data_type: string
         tests:
           - not_null:
               config:
@@ -124,6 +129,7 @@ models:
                 severity: error
       - name: geo_key
         description: "Foreign key to dim_geo"
+        data_type: string
         tests:
           - not_null:
               config:
@@ -136,6 +142,7 @@ models:
                 severity: error
       - name: traffic_key
         description: "Foreign key to dim_traffic_source"
+        data_type: string
         tests:
           - not_null:
               config:
@@ -148,6 +155,7 @@ models:
                 severity: error
       - name: device_key
         description: "Foreign key to dim_device"
+        data_type: string
         tests:
           - not_null:
               config:
@@ -160,12 +168,14 @@ models:
                 severity: error
       - name: event_date
         description: "Date of the purchase"
+        data_type: date
         tests:
           - not_null:
               config:
                 severity: error
       - name: revenue_usd
         description: "Purchase revenue in USD"
+        data_type: float64
         tests:
           - not_null:
               config:
@@ -181,6 +191,7 @@ models:
                 severity: error
       - name: event_timestamp
         description: "Exact timestamp of the purchase"
+        data_type: timestamp
         tests:
           - not_null:
               config:

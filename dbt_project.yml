@@ -29,8 +29,10 @@ models:
       +materialized: view
       +schema: staging
       +tags: ['staging', 'daily']
+      +access: private
+      +group: analytics_engineering
       +meta:
-        owner: Kyamil
+        owner: jack
         team: analytics_engineering
         layer: staging
         contains_pii: true
@@ -38,8 +40,10 @@ models:
       +materialized: table
       +schema: dimensions
       +tags: ['dimensions', 'daily', 'core']
+      +access: public
+      +group: analytics_engineering
       +meta:
-        owner: Kyamil
+        owner: jack
         team: analytics_engineering
         layer: core
         contains_pii: false
@@ -47,20 +51,24 @@ models:
       +materialized: table
       +schema: facts
       +tags: ['facts', 'daily', 'core']
+      +access: public
+      +group: analytics_engineering
       +meta:
-        owner: Kyamil
+        owner: jack
         team: analytics_engineering
         layer: core
         contains_pii: false
     marts:
-          +materialized: table
-          +schema: marts
-          +tags: ['marts', 'daily']
-          +meta:
-            owner: jack
-            team: analytics_engineering
-            layer: marts
-            contains_pii: false
+      +materialized: table
+      +schema: marts
+      +tags: ['marts', 'daily']
+      +access: public
+      +group: analytics_engineering
+      +meta:
+        owner: jack
+        team: analytics_engineering
+        layer: marts
+        contains_pii: false
 
 seeds:
   ga4_analytics:
