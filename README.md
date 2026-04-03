@@ -1,7 +1,13 @@
 # 📊 GA4 E-Commerce Analytics Engineering Project
 ### dbt + BigQuery | Star Schema Data Warehouse
 
-<img width="400" alt="dbt + BigQuery" src="https://github.com/user-attachments/assets/d9307afa-3570-4fac-b0b9-06b81610e7f1" />
+<div style="text-align: center;">
+  <img 
+    width="500" 
+    alt="dbt + BigQuery" 
+    src="https://github.com/user-attachments/assets/d9307afa-3570-4fac-b0b9-06b81610e7f1" 
+  />
+</div>
 
 ---
 
