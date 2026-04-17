@@ -1,5 +1,13 @@
 # 📊 GA4 E-Commerce Analytics Engineering Project
-### dbt + BigQuery | Star Schema Data Warehouse
+
+### dbt Core + BigQuery + Dagster + Marquez | Production-Grade Analytics Data Warehouse
+
+![dbt](https://img.shields.io/badge/dbt-1.11-orange?logo=dbt)
+![BigQuery](https://img.shields.io/badge/BigQuery-Google-blue?logo=googlebigquery)
+![Dagster](https://img.shields.io/badge/Dagster-Orchestration-purple?logo=dagster)
+![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-black?logo=githubactions)
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 <div style="text-align: center;">
   <img 
@@ -25,16 +33,16 @@ This project solves that problem by building a **production-ready analytics data
 ---
 
 ## 🏗️ Architecture Overview
-```
-Raw Source (BigQuery)
-        │
-        ▼
+Raw Source (BigQuery ga4_raw.events)
+                │
+                ▼
 ┌─────────────────────────────────┐
 │         STAGING LAYER           │
 │  stg_ga4_events (view)          │
 │  • Unnests nested GA4 records   │
 │  • Flattens device/geo/traffic  │
 │  • Standardizes data types      │
+│  access: private                │
 └────────────────┬────────────────┘
                  │
         ┌────────┴────────┐
@@ -44,54 +52,81 @@ Raw Source (BigQuery)
 │               │  │                  │
 │ dim_user      │  │ fact_events      │
 │ dim_device    │  │ fact_purchases   │
-│ dim_geo       │  │                  │
-│ dim_traffic   │  │ (incremental)    │
-│ dim_date      │  │                  │
+│ dim_geo       │  │  (contracted)    │
+│ dim_traffic   │  │                  │
+│ dim_date      │  │ (incremental)    │
+│ access:public │  │ access: public   │
 └───────────────┘  └──────────────────┘
-        │                 │
-        └────────┬────────┘
-                 ▼
+         │                 │
+         └────────┬────────┘
+                  ▼
+┌─────────────────────────────────┐
+│         MARTS LAYER             │
+│  mart_revenue_by_channel        │
+│  mart_daily_revenue             │
+│  mart_user_cohorts              │
+│  mart_geo_revenue               │
+│  access: public                 │
+└─────────────────────────────────┘
+                │
+                ▼
 ┌─────────────────────────────────┐
 │         SNAPSHOT LAYER          │
 │  dim_user_snapshot (SCD Type 2) │
 │  • Tracks attribute changes     │
 │  • dbt_valid_from / valid_to    │
 └─────────────────────────────────┘
-                 │
-                 ▼
-    BI Tools / Looker Studio / SQL
-```
+                │
+                ▼
+    Looker Studio Dashboard / SQL
 
 ---
 
 ## 📁 Project Structure
-```
 dbt_bigquery/
 ├── models/
 │   ├── staging/
-│   │   ├── sources.yml              # Source definitions
+│   │   ├── _sources.yml             # Source definitions + freshness checks
+│   │   ├── _model_properties.yml    # Tests + descriptions for staging layer
 │   │   └── stg_ga4_events.sql       # Flattens raw GA4 nested data
 │   ├── dimensions/
-│   │   ├── dim_user.sql             # User attributes (first touch)
-│   │   ├── dim_device.sql           # Device, browser, OS, language
-│   │   ├── dim_geo.sql              # Country, region, city
-│   │   ├── dim_traffic_source.sql   # Source, medium, campaign
-│   │   └── dim_date.sql             # Date spine for 2021
-│   └── facts/
-│       ├── fact_events.sql          # All GA4 events (incremental)
-│       └── fact_purchases.sql       # Purchase transactions (incremental)
+│   │   ├── _model_properties.yml    # Tests + descriptions for dimensions
+│   │   ├── dim_user.sql
+│   │   ├── dim_device.sql
+│   │   ├── dim_geo.sql              # Enriched with country_region_mapping seed
+│   │   ├── dim_traffic_source.sql
+│   │   └── dim_date.sql
+│   ├── facts/
+│   │   ├── _model_properties.yml    # Tests + descriptions + contract for facts
+│   │   ├── fact_events.sql          # All GA4 events (incremental merge)
+│   │   └── fact_purchases.sql       # Purchases (incremental + contract enforced)
+│   └── marts/
+│       └── ecommerce/
+│           ├── _model_properties.yml
+│           ├── mart_revenue_by_channel.sql
+│           ├── mart_daily_revenue.sql
+│           ├── mart_user_cohorts.sql
+│           └── mart_geo_revenue.sql
 ├── snapshots/
 │   └── dim_user_snapshot.sql        # SCD Type 2 user history tracking
 ├── analyses/
-│   ├── revenue_and_conversion.sql   # Funnel & revenue by traffic source
-│   ├── user_behaviour.sql           # Device, geo & auth breakdown
-│   ├── purchase_trends.sql          # Daily/monthly trends & MoM growth
-│   └── traffic_source_roi.sql       # Channel efficiency & revenue per session
-├── tests/                           # Custom SQL data quality tests
-├── macros/                          # Reusable SQL macros
-├── seeds/                           # Static reference data
-└── dbt_project.yml                  # Project configuration
-```
+│   ├── revenue_and_conversion.sql
+│   ├── user_behaviour.sql
+│   ├── purchase_trends.sql
+│   └── traffic_source_roi.sql
+├── tests/
+│   └── generic/
+│       ├── assert_column_is_positive.sql      # Custom: no negative values
+│       └── assert_column_not_empty_string.sql # Custom: no empty strings
+├── seeds/
+│   └── country_region_mapping.csv   # 48 countries → world region lookup
+├── .github/
+│   └── workflows/
+│       ├── dbt_ci.yml               # Slim CI: clone + state:modified+ + defer
+│       └── dbt_cd.yml               # CD: full prod deploy on merge to main
+├── .sqlfluff                        # SQL linting configuration
+├── profiles_ci.yml                  # CI-safe profiles (no secrets)
+└── dbt_project.yml                  # Project config: tags, meta, hooks, access
 
 ---
 
@@ -99,13 +134,14 @@ dbt_bigquery/
 
 | Tool | Purpose |
 |------|---------|
-| **dbt Core 1.11** | Data transformation & modeling |
+| **dbt Core 1.11** | Data transformation, testing, documentation |
 | **Google BigQuery** | Cloud data warehouse (US region) |
-| **GA4 Public Dataset** | Source data — Google Merchandise Store 2021 |
-| **Dagster** | Pipeline orchestration & monitoring |
-| **GitHub Actions** | CI/CD — tests on PR, deploy to prod on merge |
-| **Git + GitHub** | Version control |
-| **Ubuntu (Hetzner)** | dbt runtime environment |
+| **GA4 Public Dataset** | Source — Google Merchandise Store 2021 |
+| **Dagster** | Pipeline orchestration, scheduling, asset catalog |
+| **Marquez + OpenLineage** | Data lineage tracking via dbt-ol |
+| **GitHub Actions** | CI/CD — slim CI on PR, prod deploy on merge |
+| **Hetzner Ubuntu CPX32** | dbt + Dagster runtime server |
+| **Looker Studio** | Business intelligence dashboard |
 
 ---
 
@@ -114,83 +150,143 @@ dbt_bigquery/
 ### Staging
 | Model | Materialization | Description |
 |-------|-----------------|-------------|
-| `stg_ga4_events` | View | Flattens all raw GA4 nested RECORD fields into clean columns. Handles `device`, `geo`, `traffic_source` structs and converts GA4 microsecond timestamps |
+| `stg_ga4_events` | View | Flattens all raw GA4 nested RECORD fields. Handles `device`, `geo`, `traffic_source` structs. Converts GA4 microsecond timestamps. Access: **private** |
 
 ### Dimensions
-| Model | Rows | Description | Key Fields |
-|-------|------|-------------|------------|
-| `dim_date` | 364 | Full 2021 calendar with time attributes | `date_id`, `week_of_year`, `quarter`, `is_weekend` |
-| `dim_user` | 270,200 | One row per unique user — first touch attributes | `user_key`, `is_authenticated`, `is_mobile_user` |
-| `dim_device` | 390 | Unique device/OS/browser/language combinations | `device_key`, `device_category`, `is_mobile` |
-| `dim_geo` | 973 | Unique country/region/city combinations | `geo_key`, `geo_country`, `geo_city` |
-| `dim_traffic_source` | 15 | Unique source/medium/campaign combinations | `traffic_key`, `is_organic`, `is_paid` |
+| Model | Rows | Description |
+|-------|------|-------------|
+| `dim_date` | 364 | Full 2021 calendar — `week_of_year`, `quarter`, `is_weekend` |
+| `dim_user` | 270,200 | One row per unique user, first-touch attributes — `is_authenticated`, `is_mobile_user` |
+| `dim_device` | 390 | Unique device/OS/browser/language combos — `is_mobile`, `is_desktop`, `is_tablet` |
+| `dim_geo` | 973 | Country/region/city enriched with `world_region` and `world_sub_region` from seed |
+| `dim_traffic_source` | 15 | Source/medium/campaign — `is_organic`, `is_paid` |
 
 ### Facts
-| Model | Rows | Materialization | Description |
-|-------|------|-----------------|-------------|
-| `fact_events` | 4.3M | Incremental (merge) | All GA4 events with FK to all dimensions |
-| `fact_purchases` | 5,200 | Incremental (merge) | Purchase transactions with revenue in USD |
+| Model | Rows | Materialization | Notes |
+|-------|------|-----------------|-------|
+| `fact_events` | 4.3M | Incremental (merge) | All GA4 events with FK to all dims |
+| `fact_purchases` | 5,200 | Incremental (merge) | Revenue in USD — **contract enforced** |
+
+### Marts
+| Model | Description |
+|-------|-------------|
+| `mart_revenue_by_channel` | Revenue + purchases by traffic source and medium |
+| `mart_daily_revenue` | Daily revenue with calendar attributes for time series |
+| `mart_user_cohorts` | User cohorts by country, device, source with purchase rate |
+| `mart_geo_revenue` | Revenue by country and world region |
 
 ### Snapshots
 | Model | Description |
 |-------|-------------|
-| `dim_user_snapshot` | SCD Type 2 — tracks changes in user `geo_country`, `device_category` and `traffic_source` over time. Adds `dbt_valid_from`, `dbt_valid_to` and `dbt_updated_at` columns automatically |
+| `dim_user_snapshot` | SCD Type 2 — tracks changes in `geo_country`, `device_category`, `traffic_source`. Adds `dbt_valid_from`, `dbt_valid_to`, `dbt_updated_at` |
 
 ---
 
 ## 🔑 Key Engineering Decisions
 
-**1. Star schema over a flat/wide table**
-Dimensions change independently of facts — a user's country or device can update without touching 4.3M event rows. The star schema separates concerns cleanly and enables SCD2 history tracking on dimensions without data duplication.
+**1. Star schema with marts layer**
+Staging → dimensions + facts → marts. Staging is `access: private` — downstream consumers can only ref the public dimensions, facts and marts. Mirrors the dbt Labs recommended layered architecture.
 
 **2. Incremental models for facts**
-`fact_events` has 4.3M rows. Full refresh processes 627MB on every run — expensive at scale. Incremental materialization with BigQuery MERGE only processes new events since the last run, reducing compute cost significantly in production.
+`fact_events` has 4.3M rows. Full refresh processes 627MB every run. Incremental materialization with BigQuery MERGE only processes new events since the last run — essential at production scale.
 
-**3. Views for staging**
-Staging models are materialized as views — no storage cost, always reflect the latest raw data, and keep transformation logic in one place.
+**3. Model contracts on fact_purchases**
+`contract: enforced: true` on `fact_purchases` guarantees column names and data types match exactly what the schema.yml declares. Breaking changes are caught at compile time, not at query time.
 
 **4. Surrogate keys via MD5 hash**
-BigQuery has no auto-increment IDs. All dimension primary keys and fact foreign keys are generated using `dbt_utils.generate_surrogate_key()` — an MD5 hash of the grain columns. Same inputs always produce the same hash, guaranteeing consistent joins across incremental runs.
+All keys generated with `dbt_utils.generate_surrogate_key()`. Same inputs always produce the same hash — consistent joins across incremental runs guaranteed.
 
-**5. Dev/prod environment separation**
-Two BigQuery target environments in `profiles.yml`: `dbt_dev_*` datasets for development and `dbt_prod_*` for production. Prevents development work from touching business-critical data.
+**5. Dev / CI / prod separation**
+Three BigQuery environments: `dbt_dev_*` (local development), `dbt_ci_*` (GitHub Actions PRs), `dbt_prod_*` (merged to main). Prevents development work from ever touching production data.
 
 **6. SCD Type 2 on dim_user**
-User attributes change over time. The snapshot tracks `geo_country`, `device_category` and `traffic_source` changes — enabling point-in-time analysis: "what device was this user on at the time of their first purchase?"
+Tracks historical user attribute changes — enabling point-in-time analysis: *"what device was this user on at the time of their first purchase?"*
+
+**7. Seed for region mapping**
+Static country → world region lookup maintained as a CSV seed. Classic use case: small reference data managed by the analytics team, not a source system.
 
 ---
 
-## ✅ Data Quality — 47 Automated Tests
+## ✅ Data Quality — 68 Automated Tests
 
-Every model includes dbt tests across all layers:
+| Test type | Severity | Applied to |
+|-----------|----------|------------|
+| `not_null` | error | All primary + foreign keys |
+| `unique` | error | All surrogate keys |
+| `relationships` | error | All fact → dim FK joins |
+| `accepted_values` | warn | `device_category`, `platform` |
+| `dbt_expectations.expect_column_values_to_be_between` | warn | `revenue_usd` (0–10,000) |
+| `dbt_expectations.expect_column_value_lengths_to_be_between` | warn | `event_name` (1–100 chars) |
+| `assert_column_is_positive` | error | `revenue_usd` |
+| `assert_column_not_empty_string` | error | `event_name` |
 
-| Test type | What it checks | Applied to |
-|-----------|---------------|------------|
-| `not_null` | No missing values on key columns | All primary + foreign keys |
-| `unique` | No duplicate dimension rows | All surrogate keys |
-| `accepted_values` | Only expected values in categoricals | `device_category` |
-| `relationships` | Every FK exists in the referenced dimension | All fact → dim joins |
-
-**Real bug caught in development:** `dim_device` had 44 duplicate surrogate keys because `device_language` was in the `SELECT DISTINCT` but missing from the `generate_surrogate_key()` hash. The `unique` test caught it immediately — adding `device_language` to the hash reduced duplicates to zero and the `relationships` tests confirmed full FK integrity across all 4.3M fact rows.
+**Real bug caught:** `dim_device` had 44 duplicate surrogate keys because `device_language` was missing from the `generate_surrogate_key()` hash. The `unique` test caught it immediately — a textbook example of why automated testing matters in analytics engineering.
 
 ---
 
-## 📊 Business Analyses
+## 📊 Source Freshness
 
-Four SQL analyses in `analyses/` answer real business questions directly against the star schema:
+Source freshness monitoring is configured in `_sources.yml`:
+```yaml
+freshness:
+  warn_after: {count: 24, period: hour}
+  error_after: {count: 48, period: hour}
+```
 
-| File | Business Question |
-|------|-------------------|
-| `revenue_and_conversion.sql` | What is our conversion rate and which traffic sources drive the most revenue? |
-| `user_behaviour.sql` | How do users engage by device type, geography and authentication status? |
-| `purchase_trends.sql` | How does revenue trend daily and monthly — including MoM growth rate? |
-| `traffic_source_roi.sql` | Which channels bring buyers vs browsers — revenue per session by source? |
+Running `dbt source freshness` returns **ERROR STALE** — which is expected and intentional. This is a static 2021 demo dataset. In production, this check would catch upstream ingestion failures before they silently produce stale dashboards. The configuration demonstrates the pattern even though the data will always be stale.
+
+---
+
+## 🔄 CI/CD Pipeline
+
+### Pull Request (CI)
+git push origin feature/branch
+→ GitHub Actions triggers automatically
+→ dbt clone (zero-copy BigQuery clones of unchanged prod tables)
+→ dbt build --select state:modified+ --defer --state ./previous-state
+→ Only changed models + downstream deps are rebuilt and tested
+→ PR blocked if any error-severity test fails
+→ manifest.json cached for next PR's state comparison
+
+### Merge to main (CD)
+PR merged to main
+→ GitHub Actions triggers automatically
+→ dbt seed --target prod
+→ dbt snapshot --target prod
+→ dbt build --target prod
+→ dbt docs generate
+→ No manual prod deployment ever needed
+
+**Key CI/CD features:**
+- Slim CI with `state:modified+` — only rebuilds what changed
+- `--defer` flag — resolves unchanged upstream refs against prod, no rebuild needed
+- Zero-copy clone strategy — unchanged prod tables cloned instantly, zero storage cost
+- BigQuery credentials stored as GitHub Secrets — never in the repository
+
+---
+
+## 🎭 Model Governance
+```yaml
+# dbt_project.yml
+staging:   access: private   # Implementation detail — not for downstream ref()
+dimensions: access: public   # Core layer — safe to ref() from anywhere
+facts:      access: public   # Core layer — safe to ref() from anywhere
+marts:      access: public   # Consumer layer — BI tools connect here
+```
+
+All models tagged with `daily` and layer-specific tags (`staging`, `core`, `marts`) enabling selective runs:
+```bash
+dbt run --select tag:daily
+dbt run --select tag:core
+```
+
+All models carry `meta` properties: `owner`, `team`, `layer`, `contains_pii` — visible in dbt docs and BigQuery metadata via `persist_docs`.
 
 ---
 
 ## 🚀 How to Run
 ```bash
-# Activate virtual environment (Hetzner server)
+# Activate virtual environment
 source ~/.venv/dbt/bin/activate
 
 # Test BigQuery connection
@@ -199,46 +295,81 @@ dbt debug
 # Install packages
 dbt deps
 
-# Run snapshots first (SCD2 — before dbt run in production)
-dbt snapshot
-
 # Run all models (dev environment by default)
-dbt run
+dbt build
 
 # Run against production
-dbt run --target prod
+dbt build --target prod
 
-# Run all 47 tests
-dbt test
+# Run specific layer
+dbt run --select tag:core
+
+# Run snapshot (SCD2)
+dbt snapshot
+
+# Load seeds
+dbt seed
 
 # Generate and serve documentation
 dbt docs generate
 dbt docs serve --host 0.0.0.0 --port 8085
+
+# Run with OpenLineage emission to Marquez
+OPENLINEAGE_URL=http://localhost:5000 dbt-ol run
+
+# Clean compiled artifacts
+dbt clean
 ```
 
 ---
 
-## 🔄 CI/CD Pipeline
+## 🔭 Orchestration — Dagster
 
-- **Pull Request** → GitHub Actions runs `dbt build --target staging` automatically — all models + all 47 tests must pass before merge is allowed
-- **Merge to main** → GitHub Actions deploys to production via `dbt run --target prod`
-- **BigQuery credentials** stored as GitHub Secrets — never in code
+- All 12 dbt models visible in Dagster Asset Catalog with descriptions from `schema.yml`
+- Daily schedule configured at **06:00 UTC** via `dbt_daily_schedule`
+- Full lineage graph visible in Dagster UI at `http://server:3000`
+- Runs as a permanent `systemd` service — survives server reboots
 
 ---
 
-## 🌍 Environment
+## 🗺️ Data Lineage — Marquez + OpenLineage
 
-- **Warehouse:** BigQuery (`dwh-kyamil`, US region)
-- **Execution:** dbt Core 1.11 on Hetzner Ubuntu server (CPX22)
-- **Orchestration:** Dagster — daily scheduled runs with asset lineage graph
-- **Dev datasets:** `dbt_dev_staging`, `dbt_dev_dimensions`, `dbt_dev_facts`
-- **Prod datasets:** `dbt_prod_staging`, `dbt_prod_dimensions`, `dbt_prod_facts`
+Dataset-level lineage tracked via `dbt-ol` (OpenLineage dbt wrapper) emitting events to a self-hosted **Marquez** metadata server:
+```bash
+OPENLINEAGE_URL=http://localhost:5000 dbt-ol run
+```
+
+- Marquez UI accessible at `http://server:3001`
+- Full dataset lineage graph from raw GA4 source through staging, dimensions, facts and marts
+- Namespace: `bigquery` — all datasets tracked as `dwh-kyamil.*` nodes
+
+> **Note:** Automated lineage emission on every Dagster run is a known improvement area. `dagster-openlineage` v0.1.0 is pre-production. Current workflow requires manual `dbt-ol` invocation. In production this would be automated via a Dagster sensor or dbt Cloud's native OpenLineage support.
+
+---
+
+## 🌍 Environments
+
+| Environment | Datasets | When used |
+|-------------|----------|-----------|
+| `dev` | `dbt_dev_*` | Local development — manual `dbt run` |
+| `ci` | `dbt_ci_*` | GitHub Actions PRs — automated testing |
+| `prod` | `dbt_prod_*` | GitHub Actions — merged to main only |
+
+---
+
+## 📊 Looker Studio Dashboard
+
+Live dashboard connected to `dbt_prod_*` BigQuery datasets:
+
+🔗 [GA4 Ecommerce Analytics Dashboard](https://lookerstudio.google.com/reporting/743a1687-f0f4-4ab8-b5f5-efc422f39330)
+
+Includes: revenue scorecards, revenue by traffic source, daily revenue trend, geographic revenue map, country-level table.
 
 ---
 
 ## 📬 Contact
 
-Built by **Kyamil** as part of an analytics engineering portfolio.
+Built by **Kyamil** as an analytics engineering portfolio project.
 
 - GitHub: [portfolioke](https://github.com/portfolioke)
 - LinkedIn: [in/databiai](https://www.linkedin.com/in/databiai/)
