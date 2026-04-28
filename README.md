@@ -33,100 +33,64 @@ This project solves that problem by building a **production-ready analytics data
 ---
 
 ## 🏗️ Architecture Overview
-Raw Source (BigQuery ga4_raw.events)
-                │
-                ▼
-┌─────────────────────────────────┐
-│         STAGING LAYER           │
-│  stg_ga4_events (view)          │
-│  • Unnests nested GA4 records   │
-│  • Flattens device/geo/traffic  │
-│  • Standardizes data types      │
-│  access: private                │
-└────────────────┬────────────────┘
-                 │
-        ┌────────┴────────┐
-        ▼                 ▼
-┌───────────────┐  ┌──────────────────┐
-│  DIMENSIONS   │  │     FACTS        │
-│               │  │                  │
-│ dim_user      │  │ fact_events      │
-│ dim_device    │  │ fact_purchases   │
-│ dim_geo       │  │  (contracted)    │
-│ dim_traffic   │  │                  │
-│ dim_date      │  │ (incremental)    │
-│ access:public │  │ access: public   │
-└───────────────┘  └──────────────────┘
-         │                 │
-         └────────┬────────┘
-                  ▼
-┌─────────────────────────────────┐
-│         MARTS LAYER             │
-│  mart_revenue_by_channel        │
-│  mart_daily_revenue             │
-│  mart_user_cohorts              │
-│  mart_geo_revenue               │
-│  access: public                 │
-└─────────────────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────┐
-│         SNAPSHOT LAYER          │
-│  dim_user_snapshot (SCD Type 2) │
-│  • Tracks attribute changes     │
-│  • dbt_valid_from / valid_to    │
-└─────────────────────────────────┘
-                │
-                ▼
-    Looker Studio Dashboard / SQL
 
----
+```
+Raw GA4 Source (BigQuery)
+         |
+         v
+    [STAGING]
+    stg_ga4_events  (view, access: private)
+    Unnests nested GA4 records
+    Flattens device / geo / traffic
+    Standardizes data types
+         |
+         v
+    [CORE LAYER - access: public]
+    Dimensions                    Facts
+    dim_date                      fact_events (4.3M, incremental)
+    dim_user                      fact_purchases (5.2k, incremental + contract)
+    dim_device
+    dim_geo
+    dim_traffic_source
+         |
+         v
+    [MARTS LAYER - access: public]
+    mart_revenue_by_channel
+    mart_daily_revenue
+    mart_user_cohorts
+    mart_geo_revenue
+         |
+         v
+    [SNAPSHOT LAYER]
+    dim_user_snapshot (SCD Type 2)
+         |
+         v
+    Looker Studio Dashboard
+```
 
 ## 📁 Project Structure
+
+```
 dbt_bigquery/
 ├── models/
-│   ├── staging/
-│   │   ├── _sources.yml             # Source definitions + freshness checks
-│   │   ├── _model_properties.yml    # Tests + descriptions for staging layer
-│   │   └── stg_ga4_events.sql       # Flattens raw GA4 nested data
-│   ├── dimensions/
-│   │   ├── _model_properties.yml    # Tests + descriptions for dimensions
-│   │   ├── dim_user.sql
-│   │   ├── dim_device.sql
-│   │   ├── dim_geo.sql              # Enriched with country_region_mapping seed
-│   │   ├── dim_traffic_source.sql
-│   │   └── dim_date.sql
-│   ├── facts/
-│   │   ├── _model_properties.yml    # Tests + descriptions + contract for facts
-│   │   ├── fact_events.sql          # All GA4 events (incremental merge)
-│   │   └── fact_purchases.sql       # Purchases (incremental + contract enforced)
+│   ├── staging/          # Private — flattens raw GA4 data
+│   ├── dimensions/       # Public core — 5 dimension tables
+│   ├── facts/            # Public core — fact_events, fact_purchases
 │   └── marts/
-│       └── ecommerce/
-│           ├── _model_properties.yml
-│           ├── mart_revenue_by_channel.sql
-│           ├── mart_daily_revenue.sql
-│           ├── mart_user_cohorts.sql
-│           └── mart_geo_revenue.sql
-├── snapshots/
-│   └── dim_user_snapshot.sql        # SCD Type 2 user history tracking
-├── analyses/
-│   ├── revenue_and_conversion.sql
-│   ├── user_behaviour.sql
-│   ├── purchase_trends.sql
-│   └── traffic_source_roi.sql
+│       └── ecommerce/    # Public consumer — 4 mart models
+├── snapshots/            # dim_user_snapshot (SCD Type 2)
+├── analyses/             # Ad-hoc business SQL
 ├── tests/
-│   └── generic/
-│       ├── assert_column_is_positive.sql      # Custom: no negative values
-│       └── assert_column_not_empty_string.sql # Custom: no empty strings
-├── seeds/
-│   └── country_region_mapping.csv   # 48 countries → world region lookup
+│   └── generic/          # Custom reusable tests
+├── seeds/                # country_region_mapping.csv
 ├── .github/
 │   └── workflows/
-│       ├── dbt_ci.yml               # Slim CI: clone + state:modified+ + defer
-│       └── dbt_cd.yml               # CD: full prod deploy on merge to main
-├── .sqlfluff                        # SQL linting configuration
-├── profiles_ci.yml                  # CI-safe profiles (no secrets)
-└── dbt_project.yml                  # Project config: tags, meta, hooks, access
+│       ├── dbt_ci.yml    # Slim CI: clone + state:modified+ + defer
+│       └── dbt_cd.yml    # CD: prod deploy on merge to main
+├── .sqlfluff             # SQL linting config
+├── profiles_ci.yml       # CI-safe profiles (no secrets)
+└── dbt_project.yml       # Tags, meta, hooks, access, persist_docs
+```
 
 ---
 
